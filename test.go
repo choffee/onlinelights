@@ -11,10 +11,16 @@ import (
     "net/http"
 )
 
+type Rgb struct {
+    red   uint8
+    green uint8
+    blue  uint8
+}
+
 // Used for to pass a chanel to the handler
 
-func handler(controlChan chan int, w http.ResponseWriter, r *http.Request) {
-    controlChan <- 1
+func handler(controlChan chan Rgb, w http.ResponseWriter, r *http.Request) {
+    controlChan <- Rgb{105, 105, 105}
     fmt.Fprintf(w, "<html><head><body><form name=SetLights, action=\"/lights\", method=\"post\"><input type=\"radio\" name=\"light\">Red</input><input type=\"submit\" name=\"Set\"></form></body></html>")
 }
 
@@ -28,7 +34,7 @@ func main() {
     }
     fmt.Printf("%v\n", config)
 
-    var controlChan = make(chan int)
+    var controlChan = make(chan Rgb)
 
     spark := new(gobotSpark.SparkAdaptor)
     spark.Name = "spark"
@@ -36,24 +42,33 @@ func main() {
     spark.Params["device_id"] = config["device_id"]
     spark.Params["access_token"] = config["access_token"]
 
-    led := gobotGPIO.NewLed(spark)
-    led.Name = "led"
-    led.Pin = "D7"
+    ledred := gobotGPIO.NewLed(spark)
+    ledred.Name = "led"
+    ledred.Pin = "A4"
+    ledblue := gobotGPIO.NewLed(spark)
+    ledblue.Name = "led"
+    ledblue.Pin = "A5"
+    ledgreen := gobotGPIO.NewLed(spark)
+    ledgreen.Name = "led"
+    ledgreen.Pin = "A6"
 
     work := func() {
         //gobot.Every("1s", func() {
         //            led.Toggle()
         //})
+        var led Rgb
         for {
-            _ = <-controlChan
-            led.Toggle()
+            led = <-controlChan
+            ledred.Brightness(led.red)
+            ledgreen.Brightness(led.green)
+            ledblue.Brightness(led.blue)
         }
 
     }
 
     robot := gobot.Robot{
         Connections: []interface{}{spark},
-        Devices:     []interface{}{led},
+        Devices:     []interface{}{ledred, ledblue, ledgreen},
         Work:        work,
     }
 
