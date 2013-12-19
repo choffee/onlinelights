@@ -1,12 +1,14 @@
 package main
 
 import (
+    "github.com/jimlawless/cfg"
         "github.com/hybridgroup/gobot"
         "github.com/hybridgroup/gobot-spark"
         "github.com/hybridgroup/gobot-gpio"
 //        "time"
         "fmt"
         "net/http"
+        "log"
 )
 
 // Used for to pass a chanel to the handler
@@ -19,13 +21,21 @@ func handler(controlChan chan int, w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
+    // device_id and access_token
+    config := make(map[string]string)
+    err := cfg.Load("test.cfg", config)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("%v\n", config)
+
         var controlChan = make(chan int)
 
         spark := new(gobotSpark.SparkAdaptor)
         spark.Name = "spark"
         spark.Params = make(map[string]interface{})
-        spark.Params["device_id"] = ""
-        spark.Params["access_token"] = ""
+        spark.Params["device_id"] = config["device_id"]
+        spark.Params["access_token"] = config["access_token"]
 
         led := gobotGPIO.NewLed(spark)
         led.Name = "led"
