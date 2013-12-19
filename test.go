@@ -21,7 +21,16 @@ type Rgb struct {
 
 func handler(controlChan chan Rgb, w http.ResponseWriter, r *http.Request) {
     controlChan <- Rgb{105, 105, 105}
-    fmt.Fprintf(w, "<html><head><body><form name=SetLights, action=\"/lights\", method=\"post\"><input type=\"radio\" name=\"light\">Red</input><input type=\"submit\" name=\"Set\"></form></body></html>")
+    log.Println(r.FormValue("light"))
+    switch r.FormValue("light") {
+    case "red":
+        controlChan <- Rgb{255, 0, 0}
+    case "green":
+        controlChan <- Rgb{0, 255, 0}
+    case "blue":
+        controlChan <- Rgb{0, 0, 255}
+    }
+    fmt.Fprintf(w, "<html><head><body><form name=SetLights action=\"/\" method=\"post\"><ul><li><input type=\"radio\" name=\"light\" value=\"red\" checked=\"yes\" />Red</li><li><input type=\"radio\" name=\"light\" value=\"green\" />Green</li><li><input type=\"radio\" name=\"light\" value=\"blue\" />Blue</li></ul><br><input type=\"submit\" name=\"Set\"></form></body></html>")
 }
 
 func main() {
