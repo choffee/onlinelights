@@ -37,7 +37,7 @@ func main() {
 
     // device_id and access_token
     config := make(map[string]string)
-    err := cfg.Load("test.cfg", config)
+    err := cfg.Load("lights.cfg", config)
     if err != nil {
         log.Fatal(err)
     }
